@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Audiobooks{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+    <section class="container">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span>Livros</span>
+
+                        <div class="d-flex">
+                            <form>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" placeholder="Buscar livros" name="q" value="{% if q %}{{ q }}{% endif %}">
+                                    <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
+                                    {% if perms.audiobooks.add_book %}
+                                    <a class="btn btn-primary" href="{% url 'audiobooks:create' %}">Novo</a>
+                                    {% endif %}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr class="text-center">
+                                <th scope="col">#</th>
+                                <th scope="col">Título</th>
+                                <th scope="col">Editora</th>
+                                <th scope="col">Autores</th>
+                                <th scope="col">Edição</th>
+                                <th scope="col">Ano</th>
+                                <th scope="col">ISBN 10</th>
+                                <th scope="col">ISBN 13</th>
+                                <th scope="col">Ações</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% if has_books %}
+                            {% for book in page_obj %}
+                                <tr class="text-center">
+                                    <td>{{ forloop.counter }}</td>
+                                    <td class="text-capitalize">{{ book.title }}</td>
+                                    <td class="text-capitalize">{{ book.publishing_company }}</td>
+                                    <td class="text-capitalize">{{ book.authors }}</td>
+                                    <td>{{ book.edition }}ª</td>
+                                    <td>{{ book.year }}</td>
+                                    <td>{{ book.isbn_10 }}</td>
+                                    <td>{{ book.isbn_13 }}</td>
+                                    <td>
+                                        <div class="d-grid gap-2 d-md-block">
+                                            {% if perms.audiobooks.view_audiobook %}
+                                            <a href="{% url 'audiobooks:audiobooks' book.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-mic"></i>
+                                            </a>
+                                            {% endif %}
+                                            {% if perms.audiobooks.change_book %}
+                                            <a href="{% url 'audiobooks:change' book.id %}" class="btn btn-sm btn-outline-warning">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% endif %}
+                                            {% if perms.audiobooks.delete_book %}
+                                            <a class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete-book-modal-{{ book.id }}">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                <div class="modal fade" id="delete-book-modal-{{ book.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="delete-book-modal-{{ book.id }}Label" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="delete-book-modal-{{ book.id }}Label">Exclusão de Livro</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                            <p>Você tem certeza que deseja excluir o livro `<span class="fw-bold text-capitalize">{{ book.title }}?</span>`</p>
+                                            <p class="text-muted">Lembre-se: todos os audiobooks associados ao livro serão removidos.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <a type="button" href="{% url 'audiobooks:delete' book.id %}" class="btn btn-sm btn-danger">Excluir</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            {% else %}
+                                <tr class="text-center">
+                                    <td colspan="9">Não há livros cadastrados</td>
+                                </tr>
+                            {% endif %}
+                            </tbody>
+                        </table>
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination pagination-sm justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item"><a class="page-link" href="?page=1">&laquo; Primeiro</a></li>
+                                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                                    </li>
+                                {% endif %}
+                                <li class="page-item disabled"><a class="page-link" href="#">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</a></li>
+                                {% if page_obj.has_next %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próximo</a>
+                                    </li>
+                                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Último &raquo;</a></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/audiobooks/index.js' %}"></script>
+{% endblock %}

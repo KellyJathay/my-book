@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gravação de Audiobook{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+    <section class="container">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span>{% if audiobook.id %}Editar{% else %}Cadastrar{% endif %} Audiobook</span>
+
+                        <a class="btn btn-sm btn-secondary" href="{% url 'audiobooks:audiobooks' book.id %}">Voltar</a>
+                    </div>
+                    <div class="card-body">
+                        <form id="audiobook_form" method="POST" enctype="multipart/form-data" class="row g-3">
+                            {% csrf_token %}
+                            <div class="col-4">
+                                <label for="{{ form.book.id_for_label }}"
+                                       class="form-label">{{ form.book.label }}</label>
+                                <input class="d-none" type="number" name="{{ form.book.html_name }}" value="{{ book.id }}">
+                                <input type="text" class="form-control form-control-sm text-capitalize" value="{{ book.title }}" readonly>
+                            </div>
+                            <div class="col-4">
+                                <label for="{{ form.storyteller.id_for_label }}"
+                                       class="form-label">{{ form.storyteller.label }}</label>
+                                <select id="{{ form.storyteller.id_for_label }}" name="{{ form.storyteller.html_name }}" class="form-select form-select-sm text-capitalize {% if form.storyteller.errors %}is-invalid{% endif %}">
+                                    {% if storytellers.count %}
+                                    <option class="text-center" disabled>--- Selecione ---</option>
+                                    {% for storyteller in storytellers %}
+                                    <option value="{{ storyteller.id }}" class="text-capitalize" {% if audiobook.storyteller and audiobook.storyteller.id == storyteller.id %}selected{% endif %}>{{ storyteller.full_name }}</option>
+                                    {% endfor %}
+                                    {% else %}
+                                    <option class="text-center" selected disabled>Não há narradores cadastrados</option>
+                                    {% endif %}
+                                </select>
+                                {% if form.storyteller.errors %}
+                                <div class="invalid-feedback">
+                                {% for error in form.narration_type.errors %}
+                                    {{ error|escape }}
+                                {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-4">
+                                <label for="{{ form.narration_type.id_for_label }}"
+                                       class="form-label">{{ form.narration_type.label }}</label>
+                                <select id="{{ form.narration_type.id_for_label }}" name="{{ form.narration_type.html_name }}" class="form-select form-select-sm text-capitalize {% if form.narration_type.errors %}is-invalid{% endif %}">
+                                    {% if audiobook.TYPES_OF_VOICES %}
+                                    <option class="text-center" disabled>--- Selecione ---</option>
+                                    {% for key, value in audiobook.TYPES_OF_VOICES %}
+                                        <option value="{{ key }}" class="text-capitalize" {% if audiobook.narration_type and audiobook.narration_type == key %}selected{% endif %}>{{ value }}</option>
+                                    {% endfor %}
+                                    {% else %}
+                                    <option class="text-center" selected disabled>Nenhum tipo de narração</option>
+                                    {% endif %}
+                                </select>
+                                {% if form.narration_type.errors %}
+                                <div class="invalid-feedback">
+                                {% for error in form.narration_type.errors %}
+                                    {{ error|escape }}
+                                {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex">
+                                <div class="col-4"><hr></div>
+                                <div class="col-4 text-center">
+                                    <label>Gravações</label>
+                                </div>
+                                <div class="col-4"><hr></div>
+                            </div>
+
+                            {% for chapter in book.ordered_chapters_list %}
+                            <div class="d-flex flex-column">
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <label for="chapter_{{ chapter.id }}" class="form-label text-capitalize"><span class="fw-bold">Áudio:</span> {{ chapter.title }}</label>
+                                    <input class="form-control form-control-sm" id="chapter_{{ chapter.id }}" name="chapter_{{ chapter.id }}" type="file" multiple accept="audio/*">
+                                    <div class="invalid-feedback">
+                                        Este campo é obrigatório e/ou não foi preenchido corretamente
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            <div class="d-flex justify-content-end col-12">
+                                <button type="button" class="btn btn-sm btn-primary" id="submit_form">{% if audiobook.id %}Modificar{% else %}Cadastrar{% endif %}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/audiobooks/index.js' %}"></script>
+<script src="{% static 'js/audiobooks/recording.js' %}"></script>
+{% endblock %}

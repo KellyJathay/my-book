@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Audiobooks{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+    <section class="container">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span>Listagem de Audiobook</span>
+
+                        <div>
+                            <a class="btn btn-sm btn-secondary" href="{% url 'audiobooks:index' %}">Voltar</a>
+                            {% if perms.audiobooks.add_audiobook %}
+                            <a class="btn btn-sm btn-primary" href="{% url 'audiobooks:new_recording' book.id %}">Novo</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex">
+                            <div class="col-6 col-lg-4 align-self-center">
+                                <img class="img-thumbnail mx-auto d-block rounded" width="200px" src="{{ MEDIA_URL }}{{ book.front_cover }}" alt="">
+                            </div>
+                            <div class="col-6 col-lg-8 align-self-center">
+                                <p class="text-capitalize my-2"><span class="fw-bold">Título: </span>{{ book.title }}</p>
+                                <p class="text-capitalize my-2"><span class="fw-bold">Editora: </span>{{ book.publishing_company }}</p>
+                                <p class="my-2"><span class="fw-bold">Edição: </span>{{ book.edition }}ª</p>
+                                <p class="my-2"><span class="fw-bold">Ano: </span>{{ book.year }}</p>
+                                <p class="my-2"><span class="fw-bold">ISBN 10: </span>{{ book.isbn_10 }}</p>
+                                <p class="my-2"><span class="fw-bold">ISBN 13: </span>{{ book.isbn_13 }}</p>
+                                <p class="text-capitalize my-2"><span class="fw-bold">Autores: </span>{{ book.authors }}</p>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                <tr class="text-center">
+                                    <th scope="col">#</th>
+                                    <th scope="col">Narrador</th>
+                                    <th scope="col">Versão</th>
+                                    <th scope="col">Ações</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% if has_audiobooks %}
+                                {% for audiobook in audiobooks %}
+                                <tr class="text-center">
+                                    <td>{{ forloop.counter }}</td>
+                                    <td class="text-capitalize">{{ audiobook.storyteller.full_name }}</td>
+                                    <td class="text-capitalize">{{ audiobook.get_narration_type_display }}</td>
+                                    <td>
+                                        <div class="d-grid gap-2 d-md-block">
+                                            {% if perms.audiobooks.change_audiobook %}
+                                            <a href="{% url 'audiobooks:change_recording' book.id audiobook.id %}" class="btn btn-sm btn-outline-warning">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% endif %}
+                                            {% if perms.audiobooks.delete_audiobook %}
+                                            <a class="btn btn-sm btn-outline-danger"  data-bs-toggle="modal" data-bs-target="#delete-audiobook-modal-{{ audiobook.id }}">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                <div class="modal fade" id="delete-audiobook-modal-{{ audiobook.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="delete-audiobook-modal-{{ audiobook.id }}Label" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="delete-audiobook-modal-{{ audiobook.id }}Label">Exclusão de Audiobook</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Você tem certeza que deseja excluir o <span class="fst-italic">Audiobook</span> associado ao Livro `<span class="fw-bold text-capitalize">{{ audiobook.book.title }}?</span>`</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <a type="button" href="{% url 'audiobooks:delete_audiobook' audiobook.id %}" class="btn btn-sm btn-danger">Excluir</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <tr class="text-center">
+                                    <td colspan="4">Não há <span class="fst-italic">audiobooks</span> registrados para o livro</td>
+                                </tr>
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/audiobooks/index.js' %}"></script>
+{% endblock %}

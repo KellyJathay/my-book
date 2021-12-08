@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Index{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/audiobooks/play.css' %}">
+{% endblock %}
+
+{% block content %}
+<input class="d-none" id="audiobook-id" value="{{ audiobook.id }}" disabled readonly>
+<audio class="d-none" id="audio-element"></audio>
+<section class="container">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <span>Reprodução de Audiobook</span>
+
+                    <a class="btn btn-sm btn-secondary" href="{% if request.headers.Referer %}{{ request.headers.Referer }}{% else %}{% url 'main:index' %}{% endif %}">Voltar</a>
+                </div>
+                <div class="card-body d-flex align-items-center flex-wrap">
+                    <div class="col-4">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <img src="{{ MEDIA_URL }}{{ audiobook.book.front_cover }}" class="img-fluid mx-auto d-block rounded front-cover" alt="Livro: {{ audiobook.book.title }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-8">
+                        <div class="container">
+                            <div id="chapters-div" class="row">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                    <tr class="text-center">
+                                        <th scope="col">#</th>
+                                        <th scope="col" colspan="2">Sumário</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="chapters-table">
+                                    {% if audiobook.book.has_chapters %}
+                                    {% for audiobook_chapter in audiobook.chapters %}
+                                    <tr>
+                                        <td class="text-center">{{ forloop.counter }}</td>
+                                        <td class="d-none"><input class="recording-file" type="text" value="{{ MEDIA_URL }}{{ audiobook_chapter.recording_file }}" disabled readonly></td>
+                                        <td class="d-none"><input class="total-pages" type="number" value="{{ audiobook_chapter.pages_quantity }}" disabled readonly></td>
+                                        <td class="d-none"><input class="start-page" type="number" value="{{ audiobook_chapter.start_page }}" disabled readonly></td>
+                                        <td class="text-capitalize chapter-title">{{ audiobook_chapter.chapter.title }}</td>
+                                        <td>Página {{ audiobook_chapter.initial_page|default:0 }} a {{ audiobook_chapter.end_page|default:0 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <tr><td class="text-center" colspan="2">Não há capítulos registrados para o livro</td></tr>
+                                    {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 d-flex flex-wrap align-items-center">
+                        <div class="col-7 d-flex justify-content-end">
+                            <div class="d-flex flex-column">
+                                <div class="d-flex justify-content-center">
+                                    <div class="btn-group" role="group" aria-label="Basic example">
+                                        <button id="skip-back-button" type="button" class="btn btn-sm btn-link fs-2"><i class="bi bi-skip-start-circle"></i></i></button>
+                                        <button id="play-pause-button" type="button" class="btn btn-sm btn-link fs-2">
+                                            <i class="bi bi-play-circle"></i><i class="bi bi-pause-circle d-none"></i>
+                                        </button>
+                                        <button id="skip-forward-button" type="button" class="btn btn-sm btn-link fs-2"><i class="bi bi-skip-end-circle"></i></button>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span id="elapsed-time">00:00:00</span> &nbsp;
+                                    <progress id="progress-bar" max="100" value="0"></progress> &nbsp;
+                                    <span id="total-time">00:00:00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-5 d-flex align justify-content-center">
+                            <div>
+                                <p class="mb-1"><span class="fw-bold">Tocando:</span>&nbsp;<span class="text-capitalize" id="chapter-title"></span></p>
+                                <p class="mt-1"><span class="fw-bold">Página:</span>&nbsp;<span id="current-chapter-page">X</span>/{{ audiobook.total_pages|default:0 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>document.querySelector('#main').classList.add('active');</script>
+<script src="{% static 'js/audiobooks/play.js' %}"></script>
+{% endblock %}
